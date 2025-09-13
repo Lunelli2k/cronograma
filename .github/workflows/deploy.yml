@@ -1,0 +1,26 @@
+name: Deploy Scheduler to GitHub Pages
+
+on:
+  push:
+    branches:
+      - main  # Executa sempre que houver um push no branch 'main'
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Replace secrets in index.html
+        run: |
+          sed -i "s|PLACEHOLDER_TOKEN|${{ secrets.GITHUB_TOKEN }}|g" index.html
+          sed -i "s|PLACEHOLDER_USER|${{ secrets.GITHUB_USER }}|g" index.html
+          sed -i "s|PLACEHOLDER_REPO|${{ secrets.GITHUB_REPO }}|g" index.html
+          sed -i "s|PLACEHOLDER_DATA_FILE_PATH|${{ secrets.DATA_FILE_PATH }}|g" index.html
+
+      - name: Deploy to gh-pages branch
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: .
