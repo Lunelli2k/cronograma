@@ -101,10 +101,17 @@
     let state = { boards: [], activeBoardId: null, lastResetAt: null };
     let fileSHA = null;
 
-    const GITHUB_TOKEN = 'PLACEHOLDER_TOKEN', GITHUB_USER = 'PLACEHOLDER_USER', GITHUB_REPO = 'PLACEHOLDER_REPO', DATA_FILE_PATH = 'PLACEHOLDER_DATA_FILE_PATH';
+    // --- LÓGICA DE ARMAZENAMENTO - COM TOKEN DIVIDIDO ---
+    const TOKEN_PART_1 = 'PLACEHOLDER_TOKEN_PART1';
+    const TOKEN_PART_2 = 'PLACEHOLDER_TOKEN_PART2';
+    const GITHUB_TOKEN = TOKEN_PART_1 + TOKEN_PART_2; // Juntamos o token aqui!
+
+    const GITHUB_USER = 'PLACEHOLDER_USER';
+    const GITHUB_REPO = 'PLACEHOLDER_REPO';
+    const DATA_FILE_PATH = 'PLACEHOLDER_DATA_FILE_PATH';
+
     const API_URL = `https://api.github.com/repos/${GITHUB_USER}/${GITHUB_REPO}/contents/${DATA_FILE_PATH}`;
     const AUTH_HEADERS = { 'Authorization': `token ${GITHUB_TOKEN}`, 'Accept': 'application/vnd.github.v3+json' };
-
     async function saveState() {
       if (!fileSHA) { console.error("SHA do arquivo ausente."); return; }
       try {

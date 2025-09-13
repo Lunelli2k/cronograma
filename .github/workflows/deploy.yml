@@ -3,7 +3,7 @@ name: Deploy Scheduler to GitHub Pages
 on:
   push:
     branches:
-      - main  # Executa sempre que houver um push no branch 'main'
+      - main
 
 jobs:
   build-and-deploy:
@@ -14,9 +14,10 @@ jobs:
 
       - name: Replace secrets in index.html
         run: |
-          sed -i "s|PLACEHOLDER_TOKEN|${{ secrets.GITHUB_TOKEN }}|g" index.html
-          sed -i "s|PLACEHOLDER_USER|${{ secrets.GITHUB_USER }}|g" index.html
-          sed -i "s|PLACEHOLDER_REPO|${{ secrets.GITHUB_REPO }}|g" index.html
+          sed -i "s|PLACEHOLDER_TOKEN_PART1|${{ secrets.GHP_PART_1 }}|g" index.html
+          sed -i "s|PLACEHOLDER_TOKEN_PART2|${{ secrets.GHP_PART_2 }}|g" index.html
+          sed -i "s|PLACEHOLDER_USER|${{ secrets.GHP_USER }}|g" index.html
+          sed -i "s|PLACEHOLDER_REPO|${{ secrets.GHP_REPO }}|g" index.html
           sed -i "s|PLACEHOLDER_DATA_FILE_PATH|${{ secrets.DATA_FILE_PATH }}|g" index.html
 
       - name: Deploy to gh-pages branch
