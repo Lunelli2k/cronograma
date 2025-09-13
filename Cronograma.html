@@ -1,0 +1,289 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Gepeto Scheduler</title>
+  <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
+  <style>
+    :root {
+      --bg: #f6f8fa; --card-bg: #ffffff; --text-primary: #0f172a; --text-secondary: #6b7280;
+      --border-color: #e6edf3; --accent: #0ea5a4; --accent-hover: #0d9488; --danger: #ef4444;
+      --danger-hover: #dc2626; --done-opacity: 0.5; --shadow: 0 4px 12px rgba(2, 6, 23, 0.08);
+      --font-family: Inter, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+    }
+    [data-theme="dark"] {
+      --bg: #0d1117; --card-bg: #161b22; --text-primary: #c9d1d9; --text-secondary: #8b949e;
+      --border-color: #30363d; --accent: #2dd4bf; --accent-hover: #5eead4; --danger: #f87171;
+      --danger-hover: #ef4444;
+    }
+    * { box-sizing: border-box; }
+    body { font-family: var(--font-family); margin: 0; background: var(--bg); color: var(--text-primary); transition: background 0.2s ease, color 0.2s ease; }
+    header { background: var(--card-bg); border-bottom: 1px solid var(--border-color); padding: 14px 20px; display: flex; align-items: center; gap: 18px; }
+    header .title { font-weight: 600; font-size: 18px; }
+    .top-meta { margin-left: auto; text-align: right; }
+    .container { padding: 18px; max-width: 1200px; margin: 0 auto; }
+    .card { background: var(--card-bg); border-radius: 12px; padding: 16px; box-shadow: var(--shadow); border: 1px solid var(--border-color); }
+    .boards-list { display: flex; flex-direction: column; gap: 8px; }
+    .board-item { padding: 10px; display: flex; justify-content: space-between; align-items: center; border-radius: 8px; cursor: pointer; border: 1px solid var(--border-color); transition: all 0.2s ease; }
+    .board-item:hover { background: var(--bg); }
+    .board-item.active { background: var(--accent); color: white; font-weight: 500; border-color: var(--accent); }
+    .day-list-view { margin-bottom: 24px; }
+    .day-header { padding-bottom: 8px; margin-bottom: 12px; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+    .task-item { display: flex; align-items: center; gap: 12px; padding: 10px; border-radius: 8px; margin-bottom: 6px; transition: background 0.2s ease; }
+    .task-item:hover { background: var(--bg); }
+    .task-item.done { opacity: var(--done-opacity); }
+    .task-item.done .task-title { text-decoration: line-through; }
+    .task-item .task-time { font-weight: 500; font-size: 14px; background: var(--bg); padding: 4px 8px; border-radius: 6px; }
+    .task-item .task-title { flex-grow: 1; }
+    .task-item input[type="checkbox"] { width: 18px; height: 18px; cursor: pointer; accent-color: var(--accent); }
+    .small { font-size: 13px; color: var(--text-secondary); }
+    input, select, button { padding: 10px; border-radius: 8px; border: 1px solid var(--border-color); background: var(--card-bg); color: var(--text-primary); font-family: inherit; }
+    button { cursor: pointer; font-weight: 500; transition: background 0.2s ease, transform 0.1s ease; }
+    .danger { background: var(--danger); color: white; border: none; }
+    .accent { background: var(--accent); color: white; border: none; }
+    #management-grid { display: grid; grid-template-columns: 280px 1fr; gap: 18px; }
+    #weekly-view, #management-view, #today-view { display: none; } /* Ocultos por padrão */
+    /* Responsividade */
+    @media(max-width: 900px) { #management-grid { grid-template-columns: 1fr; } }
+    .theme-switch-wrapper { display: flex; align-items: center; gap: 8px; } .theme-switch { display: inline-block; height: 24px; position: relative; width: 44px; } .theme-switch input { display: none; } .slider { background-color: #ccc; bottom: 0; cursor: pointer; left: 0; position: absolute; right: 0; top: 0; transition: .4s; border-radius: 34px; } .slider:before { background-color: #fff; bottom: 4px; content: ""; height: 16px; left: 4px; position: absolute; transition: .4s; width: 16px; border-radius: 50%; } input:checked + .slider { background-color: var(--accent); } input:checked + .slider:before { transform: translateX(20px); }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="title">Gepeto Scheduler</div>
+    <div id="header-subtitle" class="small">Sua semana, organizada.</div>
+    <div class="top-meta">
+        <div style="display: flex; justify-content: flex-end; align-items: center; gap: 12px;">
+            <div id="currentDate" class="small"></div>
+            <div class="theme-switch-wrapper"><label class="theme-switch" for="theme-checkbox"><input type="checkbox" id="theme-checkbox" /><span class="slider"></span></label></div>
+        </div>
+    </div>
+  </header>
+
+  <main class="container">
+    <div id="weekly-view">
+      <div class="card" style="margin-bottom: 18px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
+          <div>
+            <h2 style="margin: 0;">Acompanhamento da Semana</h2>
+            <p class="small" style="margin: 4px 0 0;">Visualize e marque suas tarefas. Para editar, vá para o gerenciador.</p>
+          </div>
+          <a href="?mode=manage"><button>Gerenciar Quadros</button></a>
+        </div>
+        <hr style="margin: 12px 0;"/>
+        <strong>Alternar entre semanas (quadros):</strong>
+        <div class="boards-list" id="weekly-boardsList" style="margin-top:8px"></div>
+      </div>
+      <div id="weekly-daysArea"></div>
+    </div>
+
+    <div id="management-view">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom:18px;">
+        <h2 style="margin: 0;">Gerenciador</h2>
+        <a href="Cronograma.html"><button>&larr; Voltar para a Semana</button></a>
+      </div>
+      <div id="management-grid">
+        <aside>
+          <div class="card">
+            <div style="display:flex; gap:8px; align-items:center; justify-content:space-between;"><strong>Quadros</strong><button id="newBoardBtn" title="Criar novo quadro" class="accent">+</button></div>
+            <div class="boards-list" id="manage-boardsList" style="margin-top:12px"></div>
+          </div>
+        </aside>
+        <section>
+          <div class="card" style="display:flex; gap:12px; align-items:center; justify-content:space-between;">
+            <div><strong id="boardTitle" style="font-size: 20px;">—</strong><div class="small" id="boardSubtitle"></div></div>
+            <div style="display:flex; gap:8px; align-items:center; flex-wrap: wrap;"><button id="duplicateBoardBtn">Duplicar</button><button id="renameBoardBtn">Renomear</button><button id="deleteBoardBtn" class="danger">Remover</button></div>
+          </div>
+          <div class="card" style="margin-top:12px"><form id="taskForm" style="display:flex; gap:8px; flex-wrap:wrap; align-items: center;"><input id="taskTime" type="time" required /><input id="taskTitle" placeholder="Nova tarefa..." required style="flex:1;" /><select id="taskDay"><option value="0">Domingo</option><option value="1">Segunda</option><option value="2">Terça</option><option value="3">Quarta</option><option value="4">Quinta</option><option value="5">Sexta</option><option value="6">Sábado</option></select><button class="accent" type="submit">Adicionar</button></form></div>
+        </section>
+      </div>
+    </div>
+
+    <div id="today-view" class="card">
+      <div id="today-header" style="margin-bottom:12px;"></div>
+      <div id="today-tasks"></div>
+      <a href="index.html" class="small" style="display:block; text-align:center; margin-top:18px;">&larr; Ver Semana Completa</a>
+    </div>
+  </main>
+
+  <script src="secrets.js"></script>
+  <script>
+    if(window.mermaid) mermaid.initialize({startOnLoad:false, securityLevel:'loose'});
+    let state = { boards: [], activeBoardId: null, lastResetAt: null };
+    let fileSHA = null;
+
+    // --- LÓGICA DE ARMAZENAMENTO VIA API DO GITHUB ---
+    const API_URL = `https://api.github.com/repos/${GITHUB_USER}/${GITHUB_REPO}/contents/${DATA_FILE_PATH}`;
+    const AUTH_HEADERS = { 'Authorization': `token ${GITHUB_TOKEN}`, 'Accept': 'application/vnd.github.v3+json' };
+
+    async function saveState() {
+      if (!fileSHA) { console.error("SHA do arquivo ausente. Não é possível salvar."); return; }
+      try {
+        const contentBase64 = btoa(unescape(encodeURIComponent(JSON.stringify(state, null, 2))));
+        const response = await fetch(API_URL, {
+          method: 'PUT',
+          headers: AUTH_HEADERS,
+          body: JSON.stringify({
+            message: `chore: update schedule data ${new Date().toISOString()}`,
+            content: contentBase64,
+            sha: fileSHA
+          })
+        });
+        if (!response.ok) throw new Error(`API Error: ${response.statusText}`);
+        const data = await response.json();
+        fileSHA = data.content.sha;
+        console.log("Estado salvo no GitHub!");
+      } catch (error) { console.error("Falha ao salvar no GitHub:", error); }
+    }
+
+    async function loadState() {
+      try {
+        const response = await fetch(API_URL, { headers: AUTH_HEADERS, cache: 'no-cache' });
+        if (!response.ok) throw new Error(`API Error: ${response.statusText}`);
+        const data = await response.json();
+        fileSHA = data.sha;
+        const content = decodeURIComponent(escape(atob(data.content)));
+        state = JSON.parse(content);
+      } catch (error) { console.error("Falha ao carregar do GitHub:", error); }
+      state.boards = state.boards || [];
+      if (!state.activeBoardId && state.boards.length) state.activeBoardId = state.boards[0].id;
+    }
+
+    // --- LÓGICA DE NEGÓCIOS (BOARDS, TASKS, ETC) ---
+    function uid(p='id'){return p+'_'+Math.random().toString(36).slice(2,9)}
+    function deepCopy(o){return JSON.parse(JSON.stringify(o))}
+    function getActiveBoard(){return state.boards.find(b=>b.id===state.activeBoardId)}
+    function createBoard(name){const b={id:uid('b'),name,createdAt:new Date().toISOString(),days:{}};for(let i=0;i<7;i++)b.days[i]=[];state.boards.push(b);state.activeBoardId=b.id;saveState();renderCurrentMode();}
+    function removeBoard(id){if(!confirm('Remover este quadro?'))return;state.boards=state.boards.filter(b=>b.id!==id);if(state.activeBoardId===id)state.activeBoardId=state.boards.length?state.boards[0].id:null;saveState();renderCurrentMode();}
+    function renameBoard(id,newName){const b=state.boards.find(x=>x.id===id);if(b){b.name=newName;saveState();renderCurrentMode();}}
+    function duplicateBoard(id){const b=state.boards.find(x=>x.id===id);if(!b)return;const n=prompt("Nome para a cópia:",`${b.name} (cópia)`);if(!n)return;const nB={id:uid('b'),name:n,createdAt:new Date().toISOString(),days:deepCopy(b.days)};for(let i=0;i<7;i++)(nB.days[i]||[]).forEach(t=>{t.id=uid('t');t.done=false;});state.boards.push(nB);state.activeBoardId=nB.id;saveState();renderCurrentMode();}
+    function addTask(boardId,day,time,title){const b=state.boards.find(x=>x.id===boardId);if(!b)return;b.days[day].push({id:uid('t'),time,title,done:false});b.days[day].sort((a,b2)=>a.time.localeCompare(b2.time));saveState();renderCurrentMode();}
+    function toggleTask(boardId,day,taskId){const t=state.boards.find(b=>b.id===boardId)?.days[day]?.find(x=>x.id===taskId);if(t){t.done=!t.done;saveState();renderCurrentMode();}}
+    function removeTask(boardId,day,taskId){if(!confirm('Remover tarefa?'))return;const b=state.boards.find(x=>x.id===boardId);b.days[day]=b.days[day].filter(x=>x.id!==taskId);saveState();renderCurrentMode();}
+
+    // --- FUNÇÕES DE RENDERIZAÇÃO ---
+    function renderBoardsList(containerId, isMinimal = false) {
+      const list = document.getElementById(containerId);
+      list.innerHTML = '';
+      if (!state.boards.length) { list.innerHTML = `<div class="small">Nenhum quadro.</div>`; return; }
+      state.boards.forEach(b => {
+        const div = document.createElement('div');
+        div.className = 'board-item' + (b.id === state.activeBoardId ? ' active' : '');
+        div.innerHTML = `<div style="flex:1">${b.name}</div>`;
+        div.onclick = () => { state.activeBoardId = b.id; saveState(); renderCurrentMode(); }; // Salva a troca do quadro ativo
+        list.appendChild(div);
+      });
+    }
+
+    function renderDays(containerId, isEditable = false) {
+      const board = getActiveBoard();
+      const daysArea = document.getElementById(containerId);
+      if (!board) { daysArea.innerHTML = '<p class="small">Selecione um quadro para ver as tarefas.</p>'; return; }
+      daysArea.innerHTML = '';
+      const weekDates = (() => { const b = new Date(), d = new Date(b), day = d.getDay(); d.setDate(d.getDate() - day); const a = []; for(let i=0;i<7;i++){ const date = new Date(d); date.setDate(d.getDate()+i); a.push(date); } return a; })();
+      
+      for (let d = 0; d < 7; d++) {
+        const dayWrapper = document.createElement('div');
+        dayWrapper.className = 'day-list-view card';
+        const tasks = board.days[d] || [];
+        const isToday = new Date().toDateString() === weekDates[d].toDateString();
+        dayWrapper.innerHTML = `
+          <div class="day-header">
+            <div>
+              <strong style="${isToday ? 'color: var(--accent);' : ''}">${weekDates[d].toLocaleDateString('pt-BR', {weekday:'long'})}</strong>
+              <span class="small">${weekDates[d].toLocaleDateString('pt-BR')}</span>
+            </div>
+          </div>
+          <div class="tasks-container"></div>
+        `;
+        const tasksContainer = dayWrapper.querySelector('.tasks-container');
+        if (tasks.length > 0) {
+          tasks.forEach(t => {
+            const taskEl = document.createElement('div');
+            taskEl.className = 'task-item' + (t.done ? ' done' : '');
+            taskEl.innerHTML = `<input type="checkbox" data-id="${t.id}" data-day="${d}" ${t.done?'checked':''}> <span class="task-title">${t.title}</span> <span class="task-time">${t.time}</span> ${isEditable ? `<button class="removeTaskBtn small" data-id="${t.id}" data-day="${d}">✕</button>` : ''}`;
+            tasksContainer.appendChild(taskEl);
+          });
+        } else {
+          tasksContainer.innerHTML = `<div class="small" style="padding:10px 0;">Nenhuma tarefa.</div>`;
+        }
+        daysArea.appendChild(dayWrapper);
+      }
+      daysArea.querySelectorAll('input[type="checkbox"]').forEach(cb=>cb.onchange=()=>toggleTask(board.id,Number(cb.dataset.day),cb.dataset.id));
+      if(isEditable)daysArea.querySelectorAll('.removeTaskBtn').forEach(btn=>btn.onclick=()=>removeTask(board.id,Number(btn.dataset.day),btn.dataset.id));
+    }
+
+    function renderWeeklyView() {
+      document.getElementById('weekly-view').style.display = 'block';
+      document.getElementById('header-subtitle').textContent = "Acompanhamento da Semana";
+      renderBoardsList('weekly-boardsList');
+      renderDays('weekly-daysArea', false); // false = não editável
+    }
+    
+    function renderManagementMode() {
+      document.getElementById('management-view').style.display = 'block';
+      document.getElementById('header-subtitle').textContent = "Gerenciador de Quadros e Tarefas";
+      renderBoardsList('manage-boardsList');
+      const board = getActiveBoard();
+      if(board){
+        document.getElementById('boardTitle').textContent = board.name;
+        document.getElementById('boardSubtitle').textContent = `Criado em ${new Date(board.createdAt).toLocaleString('pt-BR',{dateStyle:'short'})}`;
+      }
+    }
+
+    function renderTodayMode() {
+        document.getElementById('today-view').style.display = 'block';
+        document.getElementById('header-subtitle').textContent = "Checklist do Dia";
+        const board = getActiveBoard(), header = document.getElementById('today-header'), tasksContainer = document.getElementById('today-tasks');
+        if (!board) { header.innerHTML = `<h2>Nenhum quadro ativo</h2>`; return; }
+        const todayIndex = new Date().getDay(), todayName = new Date().toLocaleDateString('pt-BR',{weekday:'long'}), tasks = (board.days[todayIndex]||[]).sort((a,b)=>a.time.localeCompare(b.time));
+        header.innerHTML = `<h2>Hoje (${todayName})</h2><p class="small">Quadro: <strong>${board.name}</strong></p>`;
+        tasksContainer.innerHTML = '';
+        if(tasks.length>0) tasks.forEach(t=>{const el=document.createElement('div'); el.className='task-item'+(t.done?' done':''); el.innerHTML=`<input type="checkbox" data-id="${t.id}" data-day="${todayIndex}" ${t.done?'checked':''}> <span class="task-title">${t.title}</span> <span class="task-time">${t.time}</span>`; tasksContainer.appendChild(el);});
+        else tasksContainer.innerHTML = `<div class="small" style="text-align:center;">Nenhuma tarefa para hoje.</div>`;
+        tasksContainer.querySelectorAll('input[type="checkbox"]').forEach(cb=>cb.onchange=()=>toggleTask(board.id,Number(cb.dataset.day),cb.dataset.id));
+    }
+
+    // --- ROTEADOR E INICIALIZAÇÃO ---
+    const themeToggle = document.getElementById('theme-checkbox');
+    const currentTheme = localStorage.getItem('theme');
+    function setTheme(theme) { document.documentElement.setAttribute('data-theme', theme); localStorage.setItem('theme', theme); themeToggle.checked = theme === 'dark'; }
+    if (currentTheme) setTheme(currentTheme);
+    themeToggle.addEventListener('change', () => setTheme(themeToggle.checked ? 'dark' : 'light'));
+
+    function renderCurrentMode() {
+      document.getElementById('weekly-view').style.display = 'none';
+      document.getElementById('management-view').style.display = 'none';
+      document.getElementById('today-view').style.display = 'none';
+      const mode = new URLSearchParams(window.location.search).get('mode');
+      if (mode === 'manage') renderManagementMode();
+      else if (mode === 'today') renderTodayMode();
+      else renderWeeklyView();
+    }
+    
+    async function initializeApp() {
+      await loadState();
+      if (!state.boards.length) {
+        const name = 'Semana Padrão';
+        const b = {id:uid('b'),name,createdAt:new Date().toISOString(),days:{}};
+        for(let i=0;i<7;i++)b.days[i]=[];
+        state.boards.push(b);
+        state.activeBoardId=b.id;
+        await saveState(); // Salva o quadro inicial se não houver nenhum
+      }
+      renderCurrentMode();
+      // Bind de eventos do modo de gerenciamento
+      document.getElementById('newBoardBtn').onclick = ()=>{const n=prompt('Nome do novo quadro:'); if(n)createBoard(n);};
+      document.getElementById('duplicateBoardBtn').onclick = ()=>{if(state.activeBoardId)duplicateBoard(state.activeBoardId);};
+      document.getElementById('renameBoardBtn').onclick = ()=>{if(state.activeBoardId){const n=prompt('Novo nome:',getActiveBoard().name);if(n)renameBoard(state.activeBoardId,n);}};
+      document.getElementById('deleteBoardBtn').onclick = ()=>{if(state.activeBoardId)removeBoard(state.activeBoardId);};
+      document.getElementById('taskForm').onsubmit = e => { e.preventDefault(); const f=e.target.elements; addTask(state.activeBoardId,Number(f.taskDay.value),f.taskTime.value,f.taskTitle.value.trim()); e.target.reset(); };
+      // Meta
+      const topMeta = () => document.getElementById('currentDate').textContent = new Date().toLocaleString('pt-BR', { dateStyle: 'full', timeStyle: 'short' });
+      topMeta(); setInterval(topMeta, 30000);
+    }
+    initializeApp();
+  </script>
+</body>
+</html>
