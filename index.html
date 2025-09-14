@@ -36,8 +36,8 @@
     .accent { background: var(--accent); color: white; border: none; }
     #flow-view, #management-view, #boards-view { display: none; }
     #flow-grid { display: grid; grid-template-columns: 1fr 320px; gap: 18px; }
-    #flow-diagram-container { border: 2px solid var(--accent); display: flex; align-items: center; justify-content: center; }
-    #mermaid-diagram svg { max-width: 100%; height: auto; } /* CSS CORRIGIDO AQUI */
+    #flow-diagram-container { border: 2px solid var(--accent); display: flex; align-items: center; justify-content: center; padding: 10px; }
+    #mermaid-diagram svg { max-width: 100%; height: auto; }
     .checklist-day-header { font-weight: 600; margin-top: 16px; margin-bottom: 8px; padding-bottom: 4px; border-bottom: 1px solid var(--border-color); }
     #management-grid { display: grid; grid-template-columns: 280px 1fr; gap: 18px; }
     .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 1000; opacity: 0; pointer-events: none; transition: opacity 0.2s ease; }
@@ -55,7 +55,7 @@
   <main class="container">
     <div id="flow-view">
         <div class="card" style="margin-bottom: 18px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
-            <div><h2 style="margin: 0;">Fluxo da Semana</h2><div id="flow-board-name" class="small"></div></div>
+            <div><h2 style="margin: 0;">Fluxo do Dia</h2><div id="flow-board-name" class="small"></div></div>
             <div style="display: flex; gap: 8px; flex-wrap: wrap;"> <a href="?mode=boards"><button>Ver todos os Quadros</button></a> <a href="?mode=manage"><button>Gerenciar Tarefas</button></a> </div>
         </div>
         <div id="flow-grid">
@@ -66,7 +66,7 @@
 
     <div id="management-view">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom:18px;">
-            <h2 style="margin: 0;">Gerenciador</h2><a href="index.html"><button>&larr; Voltar para o Fluxo</button></a>
+            <h2 style="margin: 0;">Gerenciador de Semanas</h2><a href="index.html"><button>&larr; Voltar para o Fluxo</button></a>
         </div>
         <div id="management-grid">
             <aside>
@@ -121,7 +121,7 @@
     async function removeBoard(id){const ok = await showConfirmModal('Remover Quadro?', 'Esta ação não pode ser desfeita.'); if(!ok)return;state.boards=state.boards.filter(b=>b.id!==id);if(state.activeBoardId===id)state.activeBoardId=state.boards.length?state.boards[0].id:null;await saveState();renderCurrentMode();}
     async function renameBoard(id,newName){const b=state.boards.find(x=>x.id===id);if(b){b.name=newName;await saveState();renderCurrentMode();}}
     async function duplicateBoard(id){const b=state.boards.find(x=>x.id===id);if(!b)return;const n=prompt("Cópia:",`${b.name} (cópia)`);if(!n)return;const nB={id:uid('b'),name:n,createdAt:new Date().toISOString(),days:JSON.parse(JSON.stringify(b.days))};for(let i=0;i<7;i++)(nB.days[i]||[]).forEach(t=>{t.id=uid('t');t.done=false;});state.boards.push(nB);state.activeBoardId=nB.id;await saveState();renderCurrentMode();}
-    async function addTask(boardId,day,time,title){const b=state.boards.find(x=>x.id===boardId);if(!b)return;b.days[day].push({id:uid('t'),time,title,done:false});b.days[day].sort((a,b2)=>a.time.localeCompare(b2.time));await saveState();renderCurrentMode();}
+    async function addTask(boardId,day,time,title){const b=state.boards.find(x=>x.id===boardId);if(!b)return;if(!b.days[day])b.days[day]=[];b.days[day].push({id:uid('t'),time,title,done:false});b.days[day].sort((a,b2)=>a.time.localeCompare(b2.time));await saveState();renderCurrentMode();}
     async function toggleTask(boardId,day,taskId){const t=state.boards.find(b=>b.id===boardId)?.days[day]?.find(x=>x.id===taskId);if(t){t.done=!t.done;await saveState();renderCurrentMode();}}
     async function removeTask(boardId,day,taskId){const ok=await showConfirmModal('Remover Tarefa?','Tem certeza?');if(!ok)return;const b=state.boards.find(x=>x.id===boardId);b.days[day]=b.days[day].filter(x=>x.id!==taskId);await saveState();renderCurrentMode();}
     async function duplicateDay(boardId, fromDay) {
@@ -134,7 +134,6 @@
         await saveState();renderCurrentMode();
     }
     
-    // --- FUNÇÃO ADICIONADA PARA CORRIGIR O ERRO ---
     function renderBoardsList(containerId) {
         const list = document.getElementById(containerId); list.innerHTML = '';
         if (!state.boards.length) { list.innerHTML = `<div class="small">Nenhum quadro.</div>`; return; }
@@ -149,17 +148,28 @@
 
     function getWeekDates() { const week=[],today=new Date(),dayOfWeek=(today.getDay()===0)?6:today.getDay()-1,monday=new Date(today);monday.setDate(today.getDate()-dayOfWeek);for(let i=0;i<7;i++){const day=new Date(monday);day.setDate(monday.getDate()+i);week.push(day);}return week; }
     
+    // --- FUNÇÕES DE RENDERIZAÇÃO DO FLUXO CORRIGIDAS ---
     function generateMermaidCode(board) {
         if (!board) return 'graph TD\n  A["Selecione um quadro"];';
         const direction = window.innerWidth > 900 ? 'LR' : 'TD';
         let mermaidStr = `flowchart ${direction}\n  classDef done fill:#dcfce7,stroke:#15803d,color:#166534\n`;
-        const allTasks = []; const weekDates = getWeekDates();
-        for (let i = 0; i < 7; i++) { const date = weekDates[i]; const dayIndex = date.getDay(); const tasks = (board.days[dayIndex] || []); tasks.forEach((task, taskIndex) => { allTasks.push({ dayName: date.toLocaleDateString('pt-BR', { weekday: 'short' }), dayVisualIndex: i, id: `T${dayIndex}_${task.id}`, text: `${task.time} - ${task.title.replace(/"/g, '#quot;')}`, done: task.done }); }); }
-        if (allTasks.length === 0) return 'graph TD\n  A["Nenhuma tarefa neste quadro."];';
-        let currentDayIndex = -1;
-        allTasks.forEach(task => { if (task.dayVisualIndex !== currentDayIndex) { if (currentDayIndex !== -1) mermaidStr += '  end\n'; mermaidStr += `  subgraph ${task.dayName}\n`; currentDayIndex = task.dayVisualIndex; } mermaidStr += `    ${task.id}["${task.text}"]\n`; if (task.done) mermaidStr += `    class ${task.id} done\n`; });
-        mermaidStr += '  end\n';
-        for (let i = 0; i < allTasks.length - 1; i++) { mermaidStr += `  ${allTasks[i].id} --> ${allTasks[i+1].id}\n`; }
+        
+        const todayIndex = new Date().getDay();
+        const tasks = (board.days[todayIndex] || []).sort((a,b) => a.time.localeCompare(b.time));
+
+        if (tasks.length === 0) return 'graph TD\n  A["Nenhuma tarefa para hoje."];';
+        
+        tasks.forEach(task => {
+            const taskId = `T${todayIndex}_${task.id}`;
+            const taskText = `${task.time} - ${task.title.replace(/"/g, '#quot;')}`;
+            mermaidStr += `    ${taskId}["${taskText}"]\n`;
+            if (task.done) mermaidStr += `    class ${taskId} done\n`;
+        });
+        
+        for (let i = 0; i < tasks.length - 1; i++) {
+            mermaidStr += `  T${todayIndex}_${tasks[i].id} --> T${todayIndex}_${tasks[i+1].id}\n`;
+        }
+      
         return mermaidStr;
     }
     async function renderMermaidDiagram() {
@@ -169,17 +179,26 @@
     }
     function renderChecklist() {
         const board=getActiveBoard(); const container=document.getElementById('flow-checklist-container');
-        container.innerHTML = `<h3>Checklist da Semana</h3>`; if (!board) { container.innerHTML += `<p class="small">Nenhum quadro ativo.</p>`; return; }
-        const weekDates=getWeekDates(); let hasTasks = false;
-        for(let i=0;i<7;i++){
-            const date=weekDates[i];const dayIndex=date.getDay();const tasks=(board.days[dayIndex]||[]);
-            if(tasks.length > 0){
-                hasTasks = true;
-                const dayHeader=document.createElement('div');dayHeader.className='checklist-day-header';dayHeader.textContent=date.toLocaleDateString('pt-BR',{weekday:'long'});container.appendChild(dayHeader);
-                tasks.forEach(task => { const taskEl=document.createElement('div');taskEl.className='task-item'+(task.done?' done':'');taskEl.innerHTML=`<input type="checkbox" data-day="${dayIndex}" data-id="${task.id}" ${task.done?'checked':''}> <div class="task-title">${task.title}</div><span class="small">${task.time}</span>`;container.appendChild(taskEl); });
-            }
+        const today = new Date();
+        const todayIndex = today.getDay();
+        const todayName = today.toLocaleDateString('pt-BR', {weekday: 'long'});
+        
+        container.innerHTML = `<h3>Checklist de Hoje</h3><div class="checklist-day-header">${todayName}</div>`;
+        if (!board) { container.innerHTML += `<p class="small">Nenhum quadro ativo.</p>`; return; }
+        
+        const tasks = (board.days[todayIndex] || []).sort((a,b) => a.time.localeCompare(b.time));
+
+        if (tasks.length > 0) {
+            tasks.forEach(task => {
+                const taskEl = document.createElement('div');
+                taskEl.className = 'task-item' + (task.done ? ' done' : '');
+                taskEl.innerHTML = `<input type="checkbox" data-day="${todayIndex}" data-id="${task.id}" ${task.done?'checked':''}> <div class="task-title">${task.title}</div><span class="small">${task.time}</span>`;
+                container.appendChild(taskEl);
+            });
+        } else {
+            container.innerHTML += `<p class="small" style="margin-top:10px;">Nenhuma tarefa para hoje. Bom descanso!</p>`;
         }
-        if(!hasTasks){container.innerHTML += `<p class="small">Nenhuma tarefa cadastrada.</p>`;}
+        
         container.querySelectorAll('input[type="checkbox"]').forEach(cb=>{cb.onchange=()=>toggleTask(board.id,Number(cb.dataset.day),cb.dataset.id);});
     }
 
@@ -210,7 +229,7 @@
       document.getElementById('boards-view').style.display='block';
       const container=document.getElementById('boards-overview-container');container.innerHTML=``;
       state.boards.forEach(b => {
-        const totalTasks=Object.values(b.days).reduce((acc,day)=>acc+day.length,0);
+        const totalTasks=Object.values(b.days).reduce((acc,day)=>acc?acc.length:0+day.length,0);
         const card=document.createElement('div');card.className='card board-item'+(b.id===state.activeBoardId?' active':'');
         card.innerHTML=`<div><strong>${b.name}</strong><div class="small">${totalTasks} tarefas</div></div><button data-id="${b.id}">Abrir Quadro</button>`;
         container.appendChild(card);
