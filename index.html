@@ -39,14 +39,9 @@
     #flow-diagram-container { border: 2px solid var(--accent); display: flex; align-items: center; justify-content: center; padding: 10px; min-height: 450px; }
     #mermaid-diagram svg { max-width: 100%; height: auto; }
     #management-grid { display: grid; grid-template-columns: 280px 1fr; gap: 18px; }
-    /* Estilos das Abas */
     .day-tabs, .flow-tabs { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 12px; border-bottom: 1px solid var(--border-color); }
     .tab-button { padding: 10px 16px; cursor: pointer; border: none; background: transparent; color: var(--text-secondary); border-bottom: 3px solid transparent; margin-bottom: -1px; }
     .tab-button.active { color: var(--accent); font-weight: 600; border-bottom-color: var(--accent); }
-    .tab-pane { display: none; }
-    .tab-pane.active { display: block; }
-    #flow-diagram-container.tab-pane.active { display: flex; } /* Ajuste para o flexbox do diagrama */
-    /* Estilos do Modal */
     .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 1000; opacity: 0; pointer-events: none; transition: opacity 0.2s ease; }
     .modal-overlay.visible { opacity: 1; pointer-events: auto; }
     .modal-content { background: var(--card-bg); padding: 24px; border-radius: 12px; min-width: 300px; max-width: 90%; text-align: center; transform: scale(0.95); transition: transform 0.2s ease; }
@@ -69,8 +64,8 @@
         <div class="card">
             <div class="flow-tabs" id="flow-tabs-container"></div>
             <div class="tab-content">
-                <div id="flow-diagram-container" class="tab-pane"><div id="mermaid-diagram" class="mermaid"></div></div>
-                <div id="flow-checklist-container" class="tab-pane"></div>
+                <div id="flow-diagram-container"><div id="mermaid-diagram" class="mermaid"></div></div>
+                <div id="flow-checklist-container"></div>
             </div>
         </div>
     </div>
@@ -121,8 +116,9 @@
     
     function generateMermaidCode(board) { const mermaidTheme=`%%{init:{"theme":"base","themeVariables":{"fontFamily":"Handjet","fontSize":"16px","primaryColor":"${document.body.dataset.theme==='dark'?'#161b22':'#fff'}","primaryTextColor":"${document.body.dataset.theme==='dark'?'#c9d1d9':'#0f172a'}","lineColor":"${document.body.dataset.theme==='dark'?'#8b949e':'#333'}","tertiaryColor":"#f0f0f0"}}}%%\n`; let mermaidStr=mermaidTheme+`flowchart TD\n classDef done fill:#dcfce7,stroke:#15803d,color:#166534\n`; const todayIndex=new Date().getDay(); const tasks=(board.days[todayIndex]||[]).sort((a,b)=>a.time.localeCompare(b.time)); if(tasks.length===0)return 'graph TD\n A["Nenhuma tarefa para hoje."];'; tasks.forEach(task=>{const taskId=`T${todayIndex}_${task.id}`,taskText=`${task.time} - ${task.title.replace(/"/g,'#quot;')}`;mermaidStr+=` ${taskId}["${taskText}"]\n`;if(task.done)mermaidStr+=` class ${taskId} done\n`;}); for(let i=0;i<tasks.length-1;i++){mermaidStr+=` T${todayIndex}_${tasks[i].id} --> T${todayIndex}_${tasks[i+1].id}\n`;} return mermaidStr; }
     async function renderMermaidDiagram(){const board=getActiveBoard();const mermaidCode=generateMermaidCode(board);const container=document.getElementById('mermaid-diagram');container.innerHTML=mermaidCode;delete container.dataset.processed;setTimeout(async()=>{try{await mermaid.run({nodes:[container]});}catch(e){console.error("Erro no Mermaid:",e);container.innerHTML=`<div class="small" style="color:var(--danger)">Falha ao gerar fluxograma.</div>`;}},50);}
-    function renderChecklist(){const board=getActiveBoard(),container=document.getElementById('flow-checklist-container'),today=new Date(),todayIndex=today.getDay(),todayName=today.toLocaleDateString('pt-BR',{weekday:'long'});container.innerHTML=``;if(!board){container.innerHTML+=`<p class="small">Nenhum quadro ativo.</p>`;return;}const tasks=(board.days[todayIndex]||[]).sort((a,b)=>a.time.localeCompare(b.time));if(tasks.length>0){tasks.forEach(task=>{const taskEl=document.createElement('div');taskEl.className='task-item'+(task.done?' done':'');taskEl.innerHTML=`<input type="checkbox" data-day="${todayIndex}" data-id="${task.id}" ${task.done?'checked':''}> <div class="task-title">${task.title}</div><span class="small">${task.time}</span>`;container.appendChild(taskEl);});}else{container.innerHTML+=`<p class="small" style="margin-top:10px;">Nenhuma tarefa para hoje.</p>`;}container.querySelectorAll('input[type="checkbox"]').forEach(cb=>{cb.onchange=()=>toggleTask(board.id,Number(cb.dataset.day),cb.dataset.id);});}
+    function renderChecklist(){const board=getActiveBoard(),container=document.getElementById('flow-checklist-container'),today=new Date(),todayIndex=today.getDay(),todayName=today.toLocaleDateString('pt-BR',{weekday:'long'});container.innerHTML=`<h3>Checklist de Hoje</h3><div class="checklist-day-header">${todayName}</div>`;if(!board){container.innerHTML+=`<p class="small">Nenhum quadro ativo.</p>`;return;}const tasks=(board.days[todayIndex]||[]).sort((a,b)=>a.time.localeCompare(b.time));if(tasks.length>0){tasks.forEach(task=>{const taskEl=document.createElement('div');taskEl.className='task-item'+(task.done?' done':'');taskEl.innerHTML=`<input type="checkbox" data-day="${todayIndex}" data-id="${task.id}" ${task.done?'checked':''}> <div class="task-title">${task.title}</div><span class="small">${task.time}</span>`;container.appendChild(taskEl);});}else{container.innerHTML+=`<p class="small" style="margin-top:10px;">Nenhuma tarefa para hoje.</p>`;}container.querySelectorAll('input[type="checkbox"]').forEach(cb=>{cb.onchange=()=>toggleTask(board.id,Number(cb.dataset.day),cb.dataset.id);});}
 
+    // --- FUNÇÃO renderFlowView CORRIGIDA ---
     function renderFlowView() {
       document.getElementById('flow-view').style.display = 'block';
       const board = getActiveBoard();
@@ -132,18 +128,24 @@
       tabs.innerHTML = `<button class="tab-button ${activeFlowTab === 'diagram' ? 'active' : ''}" data-tab="diagram">Fluxo do Dia</button><button class="tab-button ${activeFlowTab === 'checklist' ? 'active' : ''}" data-tab="checklist">Checklist de Tarefas</button>`;
       tabs.querySelectorAll('.tab-button').forEach(btn => { btn.onclick = () => { activeFlowTab = btn.dataset.tab; renderFlowView(); }; });
 
-      document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+      const diagramPane = document.getElementById('flow-diagram-container');
+      const checklistPane = document.getElementById('flow-checklist-container');
+      
+      // Lógica explícita para mostrar/esconder
+      diagramPane.style.display = 'none';
+      checklistPane.style.display = 'none';
+
       if (activeFlowTab === 'diagram') {
-          document.getElementById('flow-diagram-container').classList.add('active');
+          diagramPane.style.display = 'flex';
           renderMermaidDiagram();
       } else {
-          document.getElementById('flow-checklist-container').classList.add('active');
+          checklistPane.style.display = 'block';
           renderChecklist();
       }
     }
+
     function renderManagementMode() {
-      document.getElementById('management-view').style.display = 'block';
-      renderBoardsList('manage-boardsList'); const board=getActiveBoard();
+      document.getElementById('management-view').style.display='block';renderBoardsList('manage-boardsList');const board=getActiveBoard();
       if(board){document.getElementById('boardTitle').textContent=board.name;document.getElementById('boardSubtitle').textContent=`Criado em ${new Date(board.createdAt).toLocaleString('pt-BR',{dateStyle:'short'})}`;}
       const tabsContainer=document.getElementById('day-tabs-container'); tabsContainer.innerHTML='';
       const dayNames=["Dom","Seg","Ter","Qua","Qui","Sex","Sáb"];
