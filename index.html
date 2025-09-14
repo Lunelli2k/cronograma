@@ -190,11 +190,28 @@
       
         return mermaidStr;
     }
-    async function renderMermaidDiagram() {
-        const board = getActiveBoard(); const mermaidCode = generateMermaidCode(board); const container = document.getElementById('mermaid-diagram');
-        container.innerHTML = mermaidCode; delete container.dataset.processed;
-        await mermaid.run({ nodes: [container] });
+    
+     async function renderMermaidDiagram() {
+        const board = getActiveBoard();
+        const mermaidCode = generateMermaidCode(board);
+        const container = document.getElementById('mermaid-diagram');
+        
+        // Limpa o conteúdo anterior e prepara o código para o Mermaid
+        container.innerHTML = mermaidCode;
+        delete container.dataset.processed; // Essencial para forçar a re-renderização
+
+        // Adiciona uma pequena pausa (50ms) para garantir que o DOM está pronto
+        setTimeout(async () => {
+            try {
+                // Roda o Mermaid no contêiner específico
+                await mermaid.run({ nodes: [container] });
+            } catch (e) {
+                console.error("Erro na renderização do Mermaid:", e);
+                container.innerHTML = `<div class="small" style="color: var(--danger)">Falha ao gerar o fluxograma.</div>`;
+            }
+        }, 50); // 50 milissegundos é o suficiente
     }
+
     function renderChecklist() {
         const board=getActiveBoard(); const container=document.getElementById('flow-checklist-container');
         const today = new Date();
