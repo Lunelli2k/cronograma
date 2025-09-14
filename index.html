@@ -4,6 +4,10 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Gepeto Scheduler - Fluxo de Tarefas</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Handjet:wght@400&display=swap" rel="stylesheet">
+  
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
   <style>
@@ -36,20 +40,8 @@
     .accent { background: var(--accent); color: white; border: none; }
     #flow-view, #management-view, #boards-view { display: none; }
     #flow-grid { display: grid; grid-template-columns: 1fr 320px; gap: 18px; }
-
-    #flow-diagram-container {
-      border: 2px solid var(--accent);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 10px;
-      min-height: 400px; /* Garante que o card tenha uma altura mínima */
-    }
-    #mermaid-diagram > svg {
-      max-width: 100%; /* Garante que o diagrama não ultrapasse o card */
-      height: auto;    /* Mantém a proporção do diagrama */
-    }
-    
+    #flow-diagram-container { border: 2px solid var(--accent); display: flex; align-items: center; justify-content: center; padding: 10px; min-height: 400px; }
+    #mermaid-diagram svg { max-width: 100%; height: auto; }
     .checklist-day-header { font-weight: 600; margin-top: 16px; margin-bottom: 8px; padding-bottom: 4px; border-bottom: 1px solid var(--border-color); }
     #management-grid { display: grid; grid-template-columns: 280px 1fr; gap: 18px; }
     .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 1000; opacity: 0; pointer-events: none; transition: opacity 0.2s ease; }
@@ -57,13 +49,7 @@
     .modal-content { background: var(--card-bg); padding: 24px; border-radius: 12px; min-width: 300px; max-width: 90%; text-align: center; transform: scale(0.95); transition: transform 0.2s ease; }
     .modal-overlay.visible .modal-content { transform: scale(1); }
     .modal-buttons { margin-top: 20px; display: flex; justify-content: center; gap: 12px; }
-    
-    @media(max-width: 1024px) { /* Aumentado de 900px para 1024px */
-      #management-grid, #flow-grid {
-        grid-template-columns: 1fr; /* Transforma em coluna única */
-      }
-    }
-
+    @media(max-width: 1024px) { #management-grid, #flow-grid { grid-template-columns: 1fr; } }
     .theme-switch-wrapper { display: flex; align-items: center; gap: 8px; } .theme-switch { display: inline-block; height: 24px; position: relative; width: 44px; } .theme-switch input { display: none; } .slider { background-color: #ccc; bottom: 0; cursor: pointer; left: 0; position: absolute; right: 0; top: 0; transition: .4s; border-radius: 34px; } .slider:before { background-color: #fff; bottom: 4px; content: ""; height: 16px; left: 4px; position: absolute; transition: .4s; width: 16px; border-radius: 50%; } input:checked + .slider { background-color: var(--accent); } input:checked + .slider:before { transform: translateX(20px); }
   </style>
 </head>
@@ -81,7 +67,6 @@
             <div id="flow-checklist-container" class="card"></div>
         </div>
     </div>
-
     <div id="management-view">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom:18px;">
             <h2 style="margin: 0;">Gerenciador de Semanas</h2><a href="index.html"><button>&larr; Voltar para o Fluxo</button></a>
@@ -100,14 +85,12 @@
             </section>
         </div>
     </div>
-      
     <div id="boards-view">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom:18px;">
             <h2 style="margin: 0;">Panorama de Quadros</h2><a href="index.html"><button>&larr; Voltar para o Fluxo</button></a>
         </div>
         <div id="boards-overview-container" class="card"></div>
     </div>
-
   </main>
   
   <div id="custom-modal" class="modal-overlay"> <div class="modal-content"> <h3 id="modal-title"></h3> <p id="modal-message" class="small"></p> <div id="modal-buttons" class="modal-buttons"></div> </div> </div>
@@ -166,11 +149,10 @@
 
     function getWeekDates() { const week=[],today=new Date(),dayOfWeek=(today.getDay()===0)?6:today.getDay()-1,monday=new Date(today);monday.setDate(today.getDate()-dayOfWeek);for(let i=0;i<7;i++){const day=new Date(monday);day.setDate(monday.getDate()+i);week.push(day);}return week; }
     
-    // --- FUNÇÕES DE RENDERIZAÇÃO DO FLUXO CORRIGIDAS ---
     function generateMermaidCode(board) {
-        if (!board) return 'graph TD\n  A["Selecione um quadro"];';
-        const direction = window.innerWidth > 900 ? 'LR' : 'TD';
-        let mermaidStr = `flowchart ${direction}\n  classDef done fill:#dcfce7,stroke:#15803d,color:#166534\n`;
+        // --- LÓGICA ATUALIZADA PARA ESTILO E ORIENTAÇÃO ---
+        const mermaidTheme = `%%{init: { "theme": "base", "themeVariables": { "fontFamily": "Handjet", "fontSize": "16px", "primaryColor": "${document.body.dataset.theme === 'dark' ? '#161b22' : '#fff'}", "primaryTextColor": "${document.body.dataset.theme === 'dark' ? '#c9d1d9' : '#0f172a'}", "lineColor": "${document.body.dataset.theme === 'dark' ? '#8b949e' : '#333'}", "tertiaryColor": "#f0f0f0" } } }%%\n`;
+        let mermaidStr = mermaidTheme + `flowchart TD\n  classDef done fill:#dcfce7,stroke:#15803d,color:#166534\n`;
         
         const todayIndex = new Date().getDay();
         const tasks = (board.days[todayIndex] || []).sort((a,b) => a.time.localeCompare(b.time));
@@ -190,50 +172,20 @@
       
         return mermaidStr;
     }
-    
-     async function renderMermaidDiagram() {
-        const board = getActiveBoard();
-        const mermaidCode = generateMermaidCode(board);
-        const container = document.getElementById('mermaid-diagram');
-        
-        // Limpa o conteúdo anterior e prepara o código para o Mermaid
-        container.innerHTML = mermaidCode;
-        delete container.dataset.processed; // Essencial para forçar a re-renderização
-
-        // Adiciona uma pequena pausa (50ms) para garantir que o DOM está pronto
-        setTimeout(async () => {
-            try {
-                // Roda o Mermaid no contêiner específico
-                await mermaid.run({ nodes: [container] });
-            } catch (e) {
-                console.error("Erro na renderização do Mermaid:", e);
-                container.innerHTML = `<div class="small" style="color: var(--danger)">Falha ao gerar o fluxograma.</div>`;
-            }
-        }, 50); // 50 milissegundos é o suficiente
+    async function renderMermaidDiagram() {
+        const board = getActiveBoard(); const mermaidCode = generateMermaidCode(board); const container = document.getElementById('mermaid-diagram');
+        container.innerHTML = mermaidCode; delete container.dataset.processed;
+        setTimeout(async () => { try { await mermaid.run({ nodes: [container] }); } catch (e) { console.error("Erro na renderização do Mermaid:", e); container.innerHTML = `<div class="small" style="color: var(--danger)">Falha ao gerar o fluxograma.</div>`; } }, 50);
     }
-
     function renderChecklist() {
         const board=getActiveBoard(); const container=document.getElementById('flow-checklist-container');
-        const today = new Date();
-        const todayIndex = today.getDay();
-        const todayName = today.toLocaleDateString('pt-BR', {weekday: 'long'});
-        
+        const today = new Date(); const todayIndex = today.getDay(); const todayName = today.toLocaleDateString('pt-BR', {weekday: 'long'});
         container.innerHTML = `<h3>Checklist de Hoje</h3><div class="checklist-day-header">${todayName}</div>`;
         if (!board) { container.innerHTML += `<p class="small">Nenhum quadro ativo.</p>`; return; }
-        
         const tasks = (board.days[todayIndex] || []).sort((a,b) => a.time.localeCompare(b.time));
-
         if (tasks.length > 0) {
-            tasks.forEach(task => {
-                const taskEl = document.createElement('div');
-                taskEl.className = 'task-item' + (task.done ? ' done' : '');
-                taskEl.innerHTML = `<input type="checkbox" data-day="${todayIndex}" data-id="${task.id}" ${task.done?'checked':''}> <div class="task-title">${task.title}</div><span class="small">${task.time}</span>`;
-                container.appendChild(taskEl);
-            });
-        } else {
-            container.innerHTML += `<p class="small" style="margin-top:10px;">Nenhuma tarefa para hoje. Bom descanso!</p>`;
-        }
-        
+            tasks.forEach(task => { const taskEl = document.createElement('div');taskEl.className = 'task-item' + (task.done ? ' done' : '');taskEl.innerHTML = `<input type="checkbox" data-day="${todayIndex}" data-id="${task.id}" ${task.done?'checked':''}> <div class="task-title">${task.title}</div><span class="small">${task.time}</span>`;container.appendChild(taskEl); });
+        } else { container.innerHTML += `<p class="small" style="margin-top:10px;">Nenhuma tarefa para hoje. Bom descanso!</p>`; }
         container.querySelectorAll('input[type="checkbox"]').forEach(cb=>{cb.onchange=()=>toggleTask(board.id,Number(cb.dataset.day),cb.dataset.id);});
     }
 
@@ -264,7 +216,7 @@
       document.getElementById('boards-view').style.display='block';
       const container=document.getElementById('boards-overview-container');container.innerHTML=``;
       state.boards.forEach(b => {
-        const totalTasks=Object.values(b.days).reduce((acc,day)=>acc?acc.length:0+day.length,0);
+        const totalTasks=Object.values(b.days).reduce((acc,day)=>acc + day.length,0);
         const card=document.createElement('div');card.className='card board-item'+(b.id===state.activeBoardId?' active':'');
         card.innerHTML=`<div><strong>${b.name}</strong><div class="small">${totalTasks} tarefas</div></div><button data-id="${b.id}">Abrir Quadro</button>`;
         container.appendChild(card);
@@ -272,9 +224,31 @@
       container.querySelectorAll('button').forEach(btn=>btn.onclick=async()=>{state.activeBoardId=btn.dataset.id;await saveState();window.location.search='';});
     }
 
-    const themeToggle=document.getElementById('theme-checkbox'),currentTheme=localStorage.getItem('theme'); function setTheme(theme){document.documentElement.setAttribute('data-theme',theme);localStorage.setItem('theme',theme);themeToggle.checked=theme==='dark';} if(currentTheme)setTheme(currentTheme);else setTheme('light'); themeToggle.addEventListener('change',()=>setTheme(themeToggle.checked?'dark':'light'));
-    function renderCurrentMode() { ['flow-view','management-view','boards-view'].forEach(id=>document.getElementById(id).style.display='none');const mode=new URLSearchParams(window.location.search).get('mode');if(mode==='manage')renderManagementMode();else if(mode==='boards')renderBoardsView();else renderFlowView(); }
-    async function initializeApp() { await loadState(); if(!state.boards.length){const name='Semana Padrão',b={id:uid('b'),name,createdAt:new Date().toISOString(),days:{}};for(let i=0;i<7;i++)b.days[i]=[];state.boards.push(b);state.activeBoardId=b.id;await saveState();} renderCurrentMode(); document.getElementById('newBoardBtn').onclick=async()=>{const n=prompt('Nome do novo quadro:');if(n)await createBoard(n);}; document.getElementById('duplicateBoardBtn').onclick=async()=>{if(state.activeBoardId)await duplicateBoard(state.activeBoardId);}; document.getElementById('renameBoardBtn').onclick=async()=>{if(state.activeBoardId){const n=prompt('Novo nome:',getActiveBoard().name);if(n)await renameBoard(state.activeBoardId,n);}}; document.getElementById('deleteBoardBtn').onclick=async()=>{if(state.activeBoardId)await removeBoard(state.activeBoardId);}; document.getElementById('taskForm').onsubmit=async e=>{e.preventDefault();const f=e.target.elements;await addTask(state.activeBoardId,Number(f.taskDay.value),f.taskTime.value,f.taskTitle.value.trim());e.target.reset();}; const topMeta=()=>document.getElementById('currentDate').textContent=new Date().toLocaleString('pt-BR',{dateStyle:'full',timeStyle:'short'}); topMeta();setInterval(topMeta,30000); }
+    const themeToggle=document.getElementById('theme-checkbox'),currentTheme=localStorage.getItem('theme');
+    function setTheme(theme){document.documentElement.setAttribute('data-theme',theme);localStorage.setItem('theme',theme);themeToggle.checked=theme==='dark'; if(document.getElementById('flow-view').style.display==='block'){renderMermaidDiagram()}}
+    if(currentTheme)setTheme(currentTheme);else setTheme('light');
+    themeToggle.addEventListener('change',()=>setTheme(themeToggle.checked?'dark':'light'));
+    
+    function debounce(func, timeout = 250){ let timer; return (...args) => { clearTimeout(timer); timer = setTimeout(() => { func.apply(this, args); }, timeout); }; }
+    const debouncedRender = debounce(() => renderCurrentMode());
+
+    function renderCurrentMode() {
+        ['flow-view','management-view','boards-view'].forEach(id=>document.getElementById(id).style.display='none');
+        const mode=new URLSearchParams(window.location.search).get('mode');
+        if(mode==='manage')renderManagementMode();else if(mode==='boards')renderBoardsView();else renderFlowView();
+    }
+    async function initializeApp() {
+        await loadState();
+        if(!state.boards.length){const name='Semana Padrão',b={id:uid('b'),name,createdAt:new Date().toISOString(),days:{}};for(let i=0;i<7;i++)b.days[i]=[];state.boards.push(b);state.activeBoardId=b.id;await saveState();}
+        renderCurrentMode();
+        window.addEventListener('resize', debouncedRender);
+        document.getElementById('newBoardBtn').onclick=async()=>{const n=prompt('Nome do novo quadro:');if(n)await createBoard(n);};
+        document.getElementById('duplicateBoardBtn').onclick=async()=>{if(state.activeBoardId)await duplicateBoard(state.activeBoardId);};
+        document.getElementById('renameBoardBtn').onclick=async()=>{if(state.activeBoardId){const n=prompt('Novo nome:',getActiveBoard().name);if(n)await renameBoard(state.activeBoardId,n);}};
+        document.getElementById('deleteBoardBtn').onclick=async()=>{if(state.activeBoardId)await removeBoard(state.activeBoardId);};
+        document.getElementById('taskForm').onsubmit=async e=>{e.preventDefault();const f=e.target.elements;await addTask(state.activeBoardId,Number(f.taskDay.value),f.taskTime.value,f.taskTitle.value.trim());e.target.reset();};
+        const topMeta=()=>document.getElementById('currentDate').textContent=new Date().toLocaleString('pt-BR',{dateStyle:'full',timeStyle:'short'}); topMeta();setInterval(topMeta,30000);
+    }
     initializeApp();
   </script>
 </body>
