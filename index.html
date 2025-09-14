@@ -36,8 +36,20 @@
     .accent { background: var(--accent); color: white; border: none; }
     #flow-view, #management-view, #boards-view { display: none; }
     #flow-grid { display: grid; grid-template-columns: 1fr 320px; gap: 18px; }
-    #flow-diagram-container { border: 2px solid var(--accent); display: flex; align-items: center; justify-content: center; padding: 10px; }
-    #mermaid-diagram svg { max-width: 100%; height: auto; }
+
+    #flow-diagram-container {
+      border: 2px solid var(--accent);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 10px;
+      min-height: 400px; /* Garante que o card tenha uma altura mínima */
+    }
+    #mermaid-diagram > svg {
+      max-width: 100%; /* Garante que o diagrama não ultrapasse o card */
+      height: auto;    /* Mantém a proporção do diagrama */
+    }
+    
     .checklist-day-header { font-weight: 600; margin-top: 16px; margin-bottom: 8px; padding-bottom: 4px; border-bottom: 1px solid var(--border-color); }
     #management-grid { display: grid; grid-template-columns: 280px 1fr; gap: 18px; }
     .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 1000; opacity: 0; pointer-events: none; transition: opacity 0.2s ease; }
@@ -45,7 +57,13 @@
     .modal-content { background: var(--card-bg); padding: 24px; border-radius: 12px; min-width: 300px; max-width: 90%; text-align: center; transform: scale(0.95); transition: transform 0.2s ease; }
     .modal-overlay.visible .modal-content { transform: scale(1); }
     .modal-buttons { margin-top: 20px; display: flex; justify-content: center; gap: 12px; }
-    @media(max-width: 900px) { #management-grid, #flow-grid { grid-template-columns: 1fr; } }
+    
+    @media(max-width: 1024px) { /* Aumentado de 900px para 1024px */
+      #management-grid, #flow-grid {
+        grid-template-columns: 1fr; /* Transforma em coluna única */
+      }
+    }
+
     .theme-switch-wrapper { display: flex; align-items: center; gap: 8px; } .theme-switch { display: inline-block; height: 24px; position: relative; width: 44px; } .theme-switch input { display: none; } .slider { background-color: #ccc; bottom: 0; cursor: pointer; left: 0; position: absolute; right: 0; top: 0; transition: .4s; border-radius: 34px; } .slider:before { background-color: #fff; bottom: 4px; content: ""; height: 16px; left: 4px; position: absolute; transition: .4s; width: 16px; border-radius: 50%; } input:checked + .slider { background-color: var(--accent); } input:checked + .slider:before { transform: translateX(20px); }
   </style>
 </head>
