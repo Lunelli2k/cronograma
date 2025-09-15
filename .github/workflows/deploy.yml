@@ -12,10 +12,10 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Replace secrets in index.html
+      - name: Replace secrets in script.js
         run: |
-          sed -i "s|PLACEHOLDER_SUPABASE_URL|${{ secrets.SUPABASE_URL }}|g" index.html
-          sed -i "s|PLACEHOLDER_SUPABASE_KEY|${{ secrets.SUPABASE_KEY }}|g" index.html
+          sed -i "s|PLACEHOLDER_SUPABASE_URL|${{ secrets.SUPABASE_URL }}|g" script.js 
+          sed -i "s|PLACEHOLDER_SUPABASE_KEY|${{ secrets.SUPABASE_KEY }}|g" script.js
 
       - name: Deploy to gh-pages branch
         uses: peaceiris/actions-gh-pages@v4
