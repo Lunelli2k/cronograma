@@ -1,99 +1,58 @@
 # 🤖 Gepeto & Gemini's Scheduler
 
-> Um planejador de tarefas diárias com visualização em fluxograma, construído em uma colaboração interativa entre um desenvolvedor, a IA Gemini do Google e o ChatGPT.
 
-Este projeto transforma uma simples lista de tarefas em um fluxo visual e interativo, ajudando a organizar e acompanhar a rotina diária de forma clara e objetiva.
+Um planejador de tarefas diárias com visualização em fluxograma, construído em colaboração com IA.
 
-![Screenshot do Gepeto Scheduler](https://i.imgur.com/5f3934.png) 
-*(Substitua esta imagem por um screenshot do seu projeto!)*
 
+Gepeto & Gemini's Scheduler transforma sua rotina diária em um fluxograma interativo e estilizado, oferecendo uma maneira visual e organizada de acompanhar suas tarefas.
+
+![Screenshot do Gepeto & Gemini's Scheduler](image.png) 
 ---
 
 ### ✨ Sobre o Projeto
 
-O Gepeto Scheduler nasceu da necessidade de visualizar uma rotina diária não apenas como uma lista, mas como uma sequência de eventos. Utilizando a biblioteca **Mermaid.js**, a aplicação gera um fluxograma dinâmico das tarefas do dia, com um estilo único "desenhado à mão".
+Este projeto é um SPA (Single Page Application) construído com HTML, CSS e JavaScript puros para ser uma ferramenta de produtividade leve e funcional. A aplicação é totalmente hospedada no GitHub Pages e utiliza o Supabase para persistência de dados em tempo real, com um fluxo de deploy automatizado via GitHub Actions.
 
-A aplicação é um SPA (Single Page Application) construído com HTML, CSS e JavaScript puros, sem o uso de frameworks, e demonstra como construir uma ferramenta moderna e robusta com tecnologias web fundamentais.
+### 🧠 Colaboração com IA
 
-### 🧠 Uma Colaboração com IA (Gemini)
-
-Este projeto é um exemplo prático de programação em par com uma Inteligência Artificial. A ideia e a direção foram fornecidas por um desenvolvedor humano, enquanto o código, as explicações de conceitos, a depuração de erros e as refatorações foram geradas pelo **Gemini**, o modelo de linguagem do Google (frequentemente referido de forma genérica como GPT).
-
-O processo funcionou da seguinte forma:
-- O desenvolvedor solicitava uma funcionalidade (ex: "Quero um diagrama que mostre minhas tarefas").
-- A IA fornecia o código completo e a explicação técnica.
-- O desenvolvedor testava, dava feedback e solicitava melhorias (ex: "O diagrama está pequeno, a responsividade não funciona, vamos usar um banco de dados em vez de salvar localmente").
-- Este ciclo de feedback e iteração resultou na aplicação final.
+Este projeto foi desenvolvido em uma colaboração de programação em par entre um desenvolvedor humano e duas IAs: **ChatGPT (OpenAI)** e **Gemini (Google)**. As IAs atuaram como assistentes de código, gerando scripts, depurando erros, explicando conceitos e sugerindo refatorações com base nas ideias e no feedback do desenvolvedor.
 
 ---
 
 ### 🚀 Funcionalidades
 
-* **Visualização Dinâmica:** Gera um fluxograma das tarefas do dia com **Mermaid.js** e um estilo customizado.
-* **Persistência de Dados na Nuvem:** Utiliza o **Supabase** (um Backend-como-um-Serviço com banco de dados PostgreSQL) para salvar os dados de forma segura e em tempo real.
-* **Deploy Automatizado (CI/CD):** Configurado com **GitHub Actions** para publicar automaticamente qualquer alteração enviada ao branch `main`.
-* **Gerenciamento de Segredos:** As chaves de API são gerenciadas de forma segura usando **GitHub Repository Secrets**.
-* **Interface Moderna:**
-    * Design responsivo com Tema Claro e Escuro.
-    * Três telas distintas: Fluxo do Dia, Gerenciador de Semanas e Panorama de Quadros.
-    * Navegação por abas e modais customizados para uma melhor experiência de usuário.
-* **Gerenciamento Completo de Tarefas:**
-    * Crie múltiplos "Quadros" (semanas).
-    * Adicione, edite, remova e marque tarefas como concluídas.
-    * Funcionalidade para duplicar dias ou quadros inteiros.
+* **Fluxo do Dia:** Diagrama Mermaid com estilo "desenhado à mão" mostrando apenas as tarefas do dia atual.
+* **Checklist Interativo:** Marque tarefas como concluídas e veja a atualização no fluxograma em tempo real.
+* **Persistência na Nuvem:** Dados salvos de forma segura e instantânea no **Supabase**.
+* **Deploy Automatizado:** O site é atualizado automaticamente a cada `push` na `main` via **GitHub Actions**.
+* **Gerenciamento Completo:**
+    * Criação de múltiplos "Quadros" (semanas).
+    * Interface com abas para gerenciar tarefas de cada dia da semana.
+    * Funções para editar, remover e duplicar tarefas e quadros.
+* **Design Moderno:** Interface responsiva com tema claro e escuro.
 
 ---
 
-### 🛠️ Tecnologias Utilizadas
+### 🛠️ Tecnologias
 
-* **Frontend:**
-    * HTML5
-    * CSS3 (com Variáveis para temas)
-    * JavaScript (ES6+ Vanilla)
-* **Backend & Dados:**
-    * **Supabase:** Para armazenamento de dados.
-* **Visualização:**
-    * **Mermaid.js:** Para a geração dos fluxogramas.
-* **DevOps & Hospedagem:**
-    * **Git & GitHub**
-    * **GitHub Actions:** Para automação de deploy (CI/CD).
-    * **GitHub Pages:** Para hospedagem gratuita do site.
+* **Frontend:** HTML5, CSS3, JavaScript (Vanilla)
+* **Backend & Dados:** Supabase (BaaS)
+* **Visualização:** Mermaid.js
+* **DevOps:** GitHub Actions (CI/CD) & GitHub Pages
 
 ---
 
-### ⚙️ Configuração para Rodar seu Próprio Scheduler
+### ⚙️ Como Rodar o Projeto
 
-Se você quiser clonar e rodar sua própria versão deste projeto, siga os passos:
-
-1.  **Clone o Repositório:**
-    ```bash
-    git clone [https://github.com/seu-usuario/seu-repositorio.git](https://github.com/seu-usuario/seu-repositorio.git)
-    ```
-
-2.  **Configure o Supabase:**
-    * Crie uma conta em [supabase.com](https://supabase.com).
-    * Crie um novo projeto.
-    * Vá em "Table Editor" > "+ New table" e crie uma tabela chamada `data` com uma coluna `content` do tipo `jsonb`.
-    * Insira uma linha inicial com `id=1` e `content={}`.
-
-3.  **Configure os Segredos no GitHub:**
-    * No seu repositório, vá em **Settings > Secrets and variables > Actions**.
-    * Crie os seguintes "Repository secrets":
-        * `SUPABASE_URL`: A URL do seu projeto Supabase.
-        * `SUPABASE_KEY`: A chave `anon` `public` do seu projeto Supabase.
-
-4.  **Configure o GitHub Pages:**
-    * Vá em **Settings > Pages**.
-    * Em "Source", selecione **"Deploy from a branch"**.
-    * Em "Branch", escolha **`gh-pages`** e salve.
-
-5.  **Envie o Código:**
-    * Faça um `git push` para o branch `main` para acionar o workflow pela primeira vez.
+1.  **Clone** o repositório.
+2.  **Crie** um projeto no Supabase, uma tabela `data` com uma coluna `content` (tipo `jsonb`) e insira uma linha inicial (`id: 1, content: {}`).
+3.  **Configure** os `Repository Secrets` no GitHub com sua `SUPABASE_URL` e `SUPABASE_KEY`.
+4.  **Ative** o GitHub Pages para servir a partir do branch `gh-pages`.
+5.  **Faça um `push`** na `main` para acionar o deploy.
 
 ---
 
-### 🚀 Como Usar
+### 📄 Licença
 
-* **Fluxo do Dia:** Acesse a URL principal para ver o fluxograma e o checklist do dia atual.
-* **Gerenciador:** Adicione `?mode=manage` à URL para acessar a tela de edição, cadastro de tarefas e quadros.
-* **Panorama de Quadros:** Adicione `?mode=boards` à URL para uma visão geral de todos os seus quadros.
+
+Este projeto está sob a licença MIT.
