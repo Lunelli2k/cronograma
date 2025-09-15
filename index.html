@@ -6,7 +6,7 @@
   <title>Gepeto Scheduler - Fluxo de Tarefas</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Handjet:wght@400&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Handjet:wght@400&family=Roboto+Mono&family=Inter:wght@400;600&display=swap" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
   <style>
@@ -46,7 +46,7 @@
     .modal-overlay.visible { opacity: 1; pointer-events: auto; }
     .modal-content { background: var(--card-bg); padding: 24px; border-radius: 12px; min-width: 300px; max-width: 90%; text-align: center; transform: scale(0.95); transition: transform 0.2s ease; }
     .modal-overlay.visible .modal-content { transform: scale(1); }
-    .modal-content input { width: 100%; margin-bottom: 8px; }
+    .modal-content input, .modal-content select { width: 100%; margin-bottom: 8px; }
     .modal-buttons { margin-top: 20px; display: flex; justify-content: center; gap: 12px; }
     @media(max-width: 1024px) { #management-grid { grid-template-columns: 1fr; } }
     .theme-switch-wrapper { display: flex; align-items: center; gap: 8px; } .theme-switch { display: inline-block; height: 24px; position: relative; width: 44px; } .theme-switch input { display: none; } .slider { background-color: #ccc; bottom: 0; cursor: pointer; left: 0; position: absolute; right: 0; top: 0; transition: .4s; border-radius: 34px; } .slider:before { background-color: #fff; bottom: 4px; content: ""; height: 16px; left: 4px; position: absolute; transition: .4s; width: 16px; border-radius: 50%; } input:checked + .slider { background-color: var(--accent); } input:checked + .slider:before { transform: translateX(20px); }
@@ -56,19 +56,7 @@
   <header> <div class="title">Gepeto Scheduler</div> <div id="header-subtitle" class="small">Sua semana, organizada.</div> <div class="top-meta"> <div style="display: flex; justify-content: flex-end; align-items: center; gap: 12px;"> <div id="currentDate" class="small"></div> <div class="theme-switch-wrapper"><label class="theme-switch" for="theme-checkbox"><input type="checkbox" id="theme-checkbox" /><span class="slider"></span></label></div> </div> </div> </header>
   
   <main class="container">
-    <div id="flow-view">
-        <div class="card" style="margin-bottom: 18px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
-            <div><h2 style="margin: 0;">Fluxo e Tarefas do Dia</h2><div id="flow-board-name" class="small"></div></div>
-            <div style="display: flex; gap: 8px; flex-wrap: wrap;"> <a href="?mode=boards"><button>Ver Quadros</button></a> <a href="?mode=manage"><button>Gerenciar</button></a> </div>
-        </div>
-        <div class="card">
-            <div class="flow-tabs" id="flow-tabs-container"></div>
-            <div class="tab-content">
-                <div id="flow-diagram-container"><div id="mermaid-diagram" class="mermaid"></div></div>
-                <div id="flow-checklist-container"></div>
-            </div>
-        </div>
-    </div>
+    <div id="flow-view"> <div class="card" style="margin-bottom: 18px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;"> <div><h2 style="margin: 0;">Fluxo e Tarefas do Dia</h2><div id="flow-board-name" class="small"></div></div> <div style="display: flex; gap: 8px; flex-wrap: wrap;"> <a href="?mode=boards"><button>Ver Quadros</button></a> <a href="?mode=manage"><button>Gerenciar</button></a> </div> </div> <div class="card"> <div class="flow-tabs" id="flow-tabs-container"></div> <div class="tab-content"> <div id="flow-diagram-container"><div id="mermaid-diagram" class="mermaid"></div></div> <div id="flow-checklist-container"></div> </div> </div> </div>
     <div id="management-view">
       <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom:18px;"> <h2 style="margin: 0;">Gerenciador de Semanas</h2><a href="index.html"><button>&larr; Voltar para o Fluxo</button></a> </div>
       <div id="management-grid">
@@ -76,7 +64,7 @@
         <section>
           <div class="card"><div style="display:flex; gap:12px; align-items:center; justify-content:space-between;"><div><strong id="boardTitle" style="font-size: 20px;">—</strong><div class="small" id="boardSubtitle"></div></div><div style="display:flex; gap:8px; align-items:center; flex-wrap: wrap;"><button id="duplicateBoardBtn">Duplicar Quadro</button><button id="renameBoardBtn">Renomear</button><button id="deleteBoardBtn" class="danger">Remover</button></div></div></div>
           <div class="card" style="margin-top:12px">
-              <div id="day-tabs-container" class="day-tabs"></div>
+              <div class="day-tabs" id="day-tabs-container"></div>
               <form id="taskForm" style="display:flex; gap:8px; flex-wrap:wrap; align-items: center; margin-top: 12px;"><input id="taskTime" type="time" required /><input id="taskTitle" placeholder="Nova tarefa para o dia selecionado..." required style="flex:1;" /><button class="accent" type="submit">Adicionar</button></form>
           </div>
           <div id="manage-daysArea" style="margin-top: 12px;" class="card"></div>
@@ -98,7 +86,7 @@
     async function saveState() { try { const { error } = await db.from('data').update({ content: state }).eq('id', 1); if (error) throw error; } catch (err) { console.error("Falha ao salvar no Supabase:", err); } }
     async function loadState() { try { const { data, error } = await db.from('data').select('content').eq('id', 1).single(); if (error) throw error; if (data && data.content) { state = data.content; } } catch (err) { console.error("Falha ao carregar do Supabase:", err); } state.boards = state.boards || []; if (!state.activeBoardId && state.boards.length) { state.activeBoardId = state.boards[0].id; } }
     
-    function showModal({title, message, inputs, confirmText, cancelText}) { return new Promise((resolve) => { document.getElementById('modal-title').textContent = title; document.getElementById('modal-message').textContent = message || ''; const buttons = document.getElementById('modal-buttons'); const inputContainer = document.getElementById('modal-input-container'); inputContainer.innerHTML = ''; if (inputs) { inputs.forEach(input => { inputContainer.innerHTML += `<input type="${input.type}" id="${input.id}" value="${input.value}">`; }); } buttons.innerHTML = `<button id="modal-btn-cancel">${cancelText || 'Cancelar'}</button><button id="modal-btn-confirm" class="accent">${confirmText || 'Confirmar'}</button>`; const modal = document.getElementById('custom-modal'); modal.classList.add('visible'); document.getElementById('modal-btn-confirm').onclick = () => { modal.classList.remove('visible'); if (inputs) { const result = {}; inputs.forEach(input => result[input.id] = document.getElementById(input.id).value); resolve(result); } else { resolve(true); } }; document.getElementById('modal-btn-cancel').onclick = () => { modal.classList.remove('visible'); resolve(null); }; }); }
+    function showModal({title, message, inputs, confirmText, cancelText}) { return new Promise((resolve) => { document.getElementById('modal-title').textContent = title; document.getElementById('modal-message').textContent = message || ''; const buttons = document.getElementById('modal-buttons'); const inputContainer = document.getElementById('modal-input-container'); inputContainer.innerHTML = ''; if (inputs) { inputs.forEach(input => { if (input.type === 'select') { let options = input.options.map(opt => `<option value="${opt.value}">${opt.text}</option>`).join(''); inputContainer.innerHTML += `<select id="${input.id}">${options}</select>`; } else { inputContainer.innerHTML += `<input type="${input.type}" id="${input.id}" value="${input.value}">`; } }); } buttons.innerHTML = `<button id="modal-btn-cancel">${cancelText || 'Cancelar'}</button><button id="modal-btn-confirm" class="accent">${confirmText || 'Confirmar'}</button>`; const modal = document.getElementById('custom-modal'); modal.classList.add('visible'); document.getElementById('modal-btn-confirm').onclick = () => { modal.classList.remove('visible'); if (inputs) { const result = {}; inputs.forEach(input => result[input.id] = document.getElementById(input.id).value); resolve(result); } else { resolve(true); } }; document.getElementById('modal-btn-cancel').onclick = () => { modal.classList.remove('visible'); resolve(null); }; }); }
     
     function uid(p='id'){return p+'_'+Math.random().toString(36).slice(2,9)}
     function getActiveBoard(){return state.boards.find(b=>b.id===state.activeBoardId)}
@@ -110,7 +98,31 @@
     async function toggleTask(boardId,day,taskId){const t=state.boards.find(b=>b.id===boardId)?.days[day]?.find(x=>x.id===taskId);if(t){t.done=!t.done;await saveState();renderCurrentMode();}}
     async function removeTask(boardId,day,taskId){const ok=await showModal({title:'Remover Tarefa?', confirmText:'Remover'});if(!ok)return;const b=state.boards.find(x=>x.id===boardId);b.days[day]=b.days[day].filter(x=>x.id!==taskId);await saveState();renderCurrentMode();}
     async function updateTask(boardId,day,taskId,newData){const t=state.boards.find(b=>b.id===boardId)?.days[day]?.find(x=>x.id===taskId);if(t){t.time=newData.editTime;t.title=newData.editTitle;}state.boards.find(b=>b.id===boardId).days[day].sort((a,b)=>a.time.localeCompare(b.time));await saveState();renderCurrentMode();}
-    async function duplicateDay(boardId, fromDay) { const board=state.boards.find(b=>b.id===boardId);if(!board)return;const toDay=prompt(`Copiar tarefas para qual dia?\n0: Dom, 1: Seg, 2: Ter, 3: Qua, 4: Qui, 5: Sex, 6: Sáb`);if(toDay===null||!/^[0-6]$/.test(toDay))return;const toDayIndex=parseInt(toDay,10),tasksToCopy=board.days[fromDay]||[];const newTasks=JSON.parse(JSON.stringify(tasksToCopy)).map(task=>({...task,id:uid('t'),done:false}));board.days[toDayIndex]=[...(board.days[toDayIndex]||[]),...newTasks].sort((a,b)=>a.time.localeCompare(b.time));await saveState();renderCurrentMode();}
+    async function useDayAsTemplate(boardId) {
+        const dayNames = ["Domingo", "Segunda", "Terça", "Quarta", "Quinta", "Sexta", "Sábado"];
+        const options = dayNames.map((name, index) => ({ text: name, value: index }));
+        const result = await showModal({
+            title: 'Usar Dia como Modelo',
+            message: 'Selecione o dia de origem (modelo) e o dia de destino para copiar as tarefas.',
+            inputs: [
+                { type: 'select', id: 'sourceDay', options: options },
+                { type: 'select', id: 'destDay', options: options }
+            ],
+            confirmText: 'Copiar'
+        });
+        if (!result) return;
+        const board = state.boards.find(b => b.id === boardId);
+        const fromDay = parseInt(result.sourceDay, 10);
+        const toDay = parseInt(result.destDay, 10);
+        const tasksToCopy = board.days[fromDay] || [];
+        if (tasksToCopy.length === 0) { alert('O dia de origem não tem tarefas para copiar.'); return; }
+        const newTasks = JSON.parse(JSON.stringify(tasksToCopy)).map(task => ({ ...task, id: uid('t'), done: false }));
+        if (!board.days[toDay]) board.days[toDay] = [];
+        board.days[toDay] = [...board.days[toDay], ...newTasks].sort((a, b) => a.time.localeCompare(b.time));
+        await saveState();
+        activeManagementDay = toDay;
+        renderCurrentMode();
+    }
     
     function renderBoardsList(containerId) { const list=document.getElementById(containerId);list.innerHTML='';if(!state.boards.length){list.innerHTML=`<div class="small">Nenhum quadro.</div>`;return;}state.boards.forEach(b=>{const div=document.createElement('div');div.className='board-item'+(b.id===state.activeBoardId?' active':'');div.innerHTML=`<div style="flex:1">${b.name}</div>`;div.onclick=async()=>{state.activeBoardId=b.id;await saveState();renderCurrentMode();};list.appendChild(div);}); }
     
@@ -118,38 +130,23 @@
     async function renderMermaidDiagram(){const board=getActiveBoard();const mermaidCode=generateMermaidCode(board);const container=document.getElementById('mermaid-diagram');container.innerHTML=mermaidCode;delete container.dataset.processed;setTimeout(async()=>{try{await mermaid.run({nodes:[container]});}catch(e){console.error("Erro no Mermaid:",e);container.innerHTML=`<div class="small" style="color:var(--danger)">Falha ao gerar fluxograma.</div>`;}},50);}
     function renderChecklist(){const board=getActiveBoard(),container=document.getElementById('flow-checklist-container'),today=new Date(),todayIndex=today.getDay(),todayName=today.toLocaleDateString('pt-BR',{weekday:'long'});container.innerHTML=`<h3>Checklist de Hoje</h3><div class="checklist-day-header">${todayName}</div>`;if(!board){container.innerHTML+=`<p class="small">Nenhum quadro ativo.</p>`;return;}const tasks=(board.days[todayIndex]||[]).sort((a,b)=>a.time.localeCompare(b.time));if(tasks.length>0){tasks.forEach(task=>{const taskEl=document.createElement('div');taskEl.className='task-item'+(task.done?' done':'');taskEl.innerHTML=`<input type="checkbox" data-day="${todayIndex}" data-id="${task.id}" ${task.done?'checked':''}> <div class="task-title">${task.title}</div><span class="small">${task.time}</span>`;container.appendChild(taskEl);});}else{container.innerHTML+=`<p class="small" style="margin-top:10px;">Nenhuma tarefa para hoje.</p>`;}container.querySelectorAll('input[type="checkbox"]').forEach(cb=>{cb.onchange=()=>toggleTask(board.id,Number(cb.dataset.day),cb.dataset.id);});}
 
-    // --- FUNÇÃO renderFlowView CORRIGIDA ---
     function renderFlowView() {
-      document.getElementById('flow-view').style.display = 'block';
-      const board = getActiveBoard();
-      document.getElementById('flow-board-name').textContent = board ? `Quadro Ativo: ${board.name}` : 'Nenhum quadro selecionado';
-      
-      const tabs = document.getElementById('flow-tabs-container');
-      tabs.innerHTML = `<button class="tab-button ${activeFlowTab === 'diagram' ? 'active' : ''}" data-tab="diagram">Fluxo do Dia</button><button class="tab-button ${activeFlowTab === 'checklist' ? 'active' : ''}" data-tab="checklist">Checklist de Tarefas</button>`;
-      tabs.querySelectorAll('.tab-button').forEach(btn => { btn.onclick = () => { activeFlowTab = btn.dataset.tab; renderFlowView(); }; });
-
-      const diagramPane = document.getElementById('flow-diagram-container');
-      const checklistPane = document.getElementById('flow-checklist-container');
-      
-      // Lógica explícita para mostrar/esconder
-      diagramPane.style.display = 'none';
-      checklistPane.style.display = 'none';
-
-      if (activeFlowTab === 'diagram') {
-          diagramPane.style.display = 'flex';
-          renderMermaidDiagram();
-      } else {
-          checklistPane.style.display = 'block';
-          renderChecklist();
-      }
+      document.getElementById('flow-view').style.display='block'; const board=getActiveBoard();
+      document.getElementById('flow-board-name').textContent=board?`Quadro Ativo: ${board.name}`:'Nenhum quadro selecionado';
+      const tabs=document.getElementById('flow-tabs-container'); tabs.innerHTML=`<button class="tab-button ${activeFlowTab==='diagram'?'active':''}" data-tab="diagram">Fluxo do Dia</button><button class="tab-button ${activeFlowTab==='checklist'?'active':''}" data-tab="checklist">Checklist</button>`;
+      tabs.querySelectorAll('.tab-button').forEach(btn=>{btn.onclick=()=>{activeFlowTab=btn.dataset.tab;renderFlowView();};});
+      const diagramPane=document.getElementById('flow-diagram-container'),checklistPane=document.getElementById('flow-checklist-container');
+      diagramPane.style.display='none'; checklistPane.style.display='none';
+      if(activeFlowTab==='diagram'){diagramPane.style.display='flex';renderMermaidDiagram();}else{checklistPane.style.display='block';renderChecklist();}
     }
-
     function renderManagementMode() {
-      document.getElementById('management-view').style.display='block';renderBoardsList('manage-boardsList');const board=getActiveBoard();
+      document.getElementById('management-view').style.display='block'; renderBoardsList('manage-boardsList'); const board=getActiveBoard();
       if(board){document.getElementById('boardTitle').textContent=board.name;document.getElementById('boardSubtitle').textContent=`Criado em ${new Date(board.createdAt).toLocaleString('pt-BR',{dateStyle:'short'})}`;}
       const tabsContainer=document.getElementById('day-tabs-container'); tabsContainer.innerHTML='';
       const dayNames=["Dom","Seg","Ter","Qua","Qui","Sex","Sáb"];
       dayNames.forEach((name,index)=>{tabsContainer.innerHTML+=`<button class="tab-button ${index===activeManagementDay?'active':''}" data-day="${index}">${name}</button>`;});
+      tabsContainer.innerHTML += `<button id="use-template-btn" class="small" style="margin-left: auto;">Usar Modelo</button>`;
+      tabsContainer.querySelector('#use-template-btn').onclick = () => useDayAsTemplate(board.id);
       tabsContainer.querySelectorAll('.tab-button').forEach(btn=>{btn.onclick=()=>{activeManagementDay=Number(btn.dataset.day);renderManagementMode();};});
       const daysArea=document.getElementById('manage-daysArea');daysArea.innerHTML='';
       const tasks=(board.days[activeManagementDay]||[]).sort((a,b)=>a.time.localeCompare(b.time));
