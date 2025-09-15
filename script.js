@@ -322,7 +322,7 @@ function renderManagementMode() {
     dayNames.forEach((name, index) => {
         tabsContainer.innerHTML += `<button class="tab-button ${index===activeManagementDay?'active':''}" data-day="${index}">${name}</button>`;
     });
-    tabsContainer.innerHTML += `<button id="use-template-btn" class="small" style="margin-left: auto; align-self: center;">Usar Modelo</button>`;
+    tabsContainer.innerHTML += `<button id="use-template-btn" class="small" style="margin-left: auto; align-self: center; margin-bottom: 5px;">Usar Modelo</button>`;
     tabsContainer.querySelector('#use-template-btn').onclick = () => useDayAsTemplate(board.id);
     tabsContainer.querySelectorAll('.tab-button').forEach(btn => {
         btn.onclick = () => {
