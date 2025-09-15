@@ -7,8 +7,8 @@
     let activeFlowTab = 'diagram';
 
     // --- CONEXÃO COM O BANCO DE DADOS (SUPABASE) ---
-    const SUPABASE_URL = 'PLACEHOLDER_SUPABASE_URL';
-    const SUPABASE_KEY = 'PLACEHOLDER_SUPABASE_KEY';
+    const SUPABASE_URL = 'https://uabmvfkwvixtgdkqzwor.supabase.co';
+    const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVhYm12Zmt3dml4dGdka3F6d29yIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc4ODY4MDQsImV4cCI6MjA3MzQ2MjgwNH0.jWcUQdM7gvDZXwLv0TU7PFZCBI5DFNOSYzF5YXgqUU8';
     const { createClient } = supabase;
     const db = createClient(SUPABASE_URL, SUPABASE_KEY);
 
