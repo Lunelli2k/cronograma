@@ -300,20 +300,38 @@
     }
 
     function generateMermaidCode(board) {
-        const mermaidTheme = `%%{init:{"theme":"base","themeVariables":{"fontFamily":"Handjet","fontSize":"16px","primaryColor":"${document.body.dataset.theme==='dark'?'#161b22':'#fff'}","primaryTextColor":"${document.body.dataset.theme==='dark'?'#c9d1d9':'#0f172a'}","lineColor":"${document.body.dataset.theme==='dark'?'#8b949e':'#333'}","tertiaryColor":"#f0f0f0"}}}%%\n`;
-        let mermaidStr = mermaidTheme + `flowchart TD\n classDef done fill:#dcfce7,stroke:#15803d,color:#166534\n`;
+        // --- NOVO TEMA "CARTOON" ---
+        const mermaidTheme = `%%{init: { 
+            "theme": "base", 
+            "themeVariables": { 
+                "fontFamily": "Inter, sans-serif", 
+                "fontSize": "15px",
+                "primaryColor": "${document.body.dataset.theme === 'dark' ? '#27272a' : '#f4f4f5'}", 
+                "primaryTextColor": "${document.body.dataset.theme === 'dark' ? '#e4e4e7' : '#18181b'}", 
+                "lineColor": "${document.body.dataset.theme === 'dark' ? '#a1a1aa' : '#71717a'}",
+                "nodeBorder": "var(--accent)"
+            } 
+        } }%%\n`;
+
+        // Definição de estilo para tarefas concluídas
+        let mermaidStr = mermaidTheme + `flowchart TD\n  classDef done fill:#dcfce7,stroke:#16a34a,color:#15803d,fontWeight:600\n`;
+        
         const todayIndex = new Date().getDay();
-        const tasks = (board.days[todayIndex] || []).sort((a, b) => a.time.localeCompare(b.time));
-        if (tasks.length === 0) return 'graph TD\n A["Nenhuma tarefa para hoje."];';
+        const tasks = (board.days[todayIndex] || []).sort((a,b) => a.time.localeCompare(b.time));
+
+        if (tasks.length === 0) return 'graph TD\n  A["Nenhuma tarefa para hoje!"];';
+        
         tasks.forEach(task => {
-            const taskId = `T${todayIndex}_${task.id}`,
-                taskText = `${task.time} - ${task.title.replace(/"/g, '#quot;')}`;
+            const taskId = `T${todayIndex}_${task.id}`;
+            const taskText = `${task.time} - ${task.title.replace(/"/g, '#quot;')}`;
             mermaidStr += `    ${taskId}["${taskText}"]\n`;
             if (task.done) mermaidStr += `    class ${taskId} done\n`;
         });
+        
         for (let i = 0; i < tasks.length - 1; i++) {
             mermaidStr += `  T${todayIndex}_${tasks[i].id} --> T${todayIndex}_${tasks[i+1].id}\n`;
         }
+      
         return mermaidStr;
     }
 
