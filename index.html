@@ -50,6 +50,14 @@
     .modal-buttons { margin-top: 20px; display: flex; justify-content: center; gap: 12px; }
     @media(max-width: 1024px) { #management-grid { grid-template-columns: 1fr; } }
     .theme-switch-wrapper { display: flex; align-items: center; gap: 8px; } .theme-switch { display: inline-block; height: 24px; position: relative; width: 44px; } .theme-switch input { display: none; } .slider { background-color: #ccc; bottom: 0; cursor: pointer; left: 0; position: absolute; right: 0; top: 0; transition: .4s; border-radius: 34px; } .slider:before { background-color: #fff; bottom: 4px; content: ""; height: 16px; left: 4px; position: absolute; transition: .4s; width: 16px; border-radius: 50%; } input:checked + .slider { background-color: var(--accent); } input:checked + .slider:before { transform: translateX(20px); }
+
+    #mermaid-diagram .node rect {min-width: 150px; min-height: 50px;
+    }
+
+    #mermaid-diagram .node .label { white-space: pre-wrap !important; word-wrap: break-word; max-width: 200px; }
+
+    #mermaid-diagram .node foreignObject { overflow: visible !important;}
+    
   </style>
 </head>
 <body>
