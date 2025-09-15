@@ -1,6 +1,8 @@
 # 🤖 Gepeto & Gemini's Scheduler
 
-> Um planejador de tarefas diárias com visualização em fluxograma, construído em colaboração com IA.
+
+Um planejador de tarefas diárias com visualização em fluxograma, construído em colaboração com IA.
+
 
 Gepeto & Gemini's Scheduler transforma sua rotina diária em um fluxograma interativo e estilizado, oferecendo uma maneira visual e organizada de acompanhar suas tarefas.
 
@@ -51,5 +53,6 @@ Este projeto foi desenvolvido em uma colaboração de programação em par entre
 ---
 
 ### 📄 Licença
+
 
 Este projeto está sob a licença MIT.
