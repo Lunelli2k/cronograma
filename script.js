@@ -7,9 +7,15 @@ let activeManagementDay = new Date().getDay();
 let activeFlowTab = 'diagram';
 
 // --- CONEXÃO COM O BANCO DE DADOS (SUPABASE) ---
-// As variáveis SUPABASE_URL e SUPABASE_KEY são fornecidas pelo secrets.js
+// As variáveis abaixo serão substituídas pelo GitHub Actions durante o deploy.
+// Para rodar localmente, você precisará de um arquivo secrets.js.
+const SUPABASE_URL = 'https://uabmvfkwvixtgdkqzwor.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVhYm12Zmt3dml4dGdka3F6d29yIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc4ODY4MDQsImV4cCI6MjA3MzQ2MjgwNH0.jWcUQdM7gvDZXwLv0TU7PFZCBI5DFNOSYzF5YXgqUU8';
 const { createClient } = supabase;
 const db = createClient(SUPABASE_URL, SUPABASE_KEY);
+
+// --- O RESTO DO SEU CÓDIGO JAVASCRIPT CONTINUA EXATAMENTE IGUAL AQUI ---
+// (Começando pela função async function saveState() { ... })
 
 async function saveState() {
     try {
@@ -36,7 +42,6 @@ async function loadState() {
     }
 }
 
-// --- LÓGICA DO MODAL ---
 function showModal({ title, message, inputs, confirmText, cancelText }) {
     return new Promise((resolve) => {
         document.getElementById('modal-title').textContent = title;
@@ -74,7 +79,6 @@ function showModal({ title, message, inputs, confirmText, cancelText }) {
     });
 }
 
-// --- LÓGICA DE NEGÓCIOS (BOARDS, TAREFAS) ---
 function uid(p = 'id') { return p + '_' + Math.random().toString(36).slice(2, 9) }
 function getActiveBoard() { return state.boards.find(b => b.id === state.activeBoardId) }
 
@@ -189,7 +193,6 @@ async function useDayAsTemplate(boardId) {
     renderCurrentMode();
 }
 
-// --- FUNÇÕES DE RENDERIZAÇÃO (UI) ---
 function renderBoardsList(containerId) {
     const list = document.getElementById(containerId);
     list.innerHTML = '';
